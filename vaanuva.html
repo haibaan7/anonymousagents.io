@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vaanuva.com | Welcome</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e, #6a11cb, #2575fc);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+
+        /* Animated Gradient Background */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Star Canvas */
+        #starCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Mouse Trail Canvas */
+        #trailCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            mix-blend-mode: screen;
+        }
+
+        /* Center Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            perspective: 1000px;
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            animation: float 6s ease-in-out infinite;
+            max-width: 90%;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        h1 {
+            color: white;
+            font-size: clamp(2rem, 5vw, 4rem);
+            margin-bottom: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* CTA Button */
+        .cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: white;
+            color: #24243e;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .cta-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 30px rgba(255,255,255,0.2);
+            background: #f0f0f0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="starCanvas"></canvas>
+    <canvas id="trailCanvas"></canvas>
+
+    <div class="container">
+        <div class="glass-card">
+            <h1>Welcome to vaanuva.com</h1>
+            <a href="#" class="cta-button">Click here to explore vaanuva.com</a>
+        </div>
+    </div>
+
+    <script>
+        // Star Field Logic
+        const starCanvas = document.getElementById('starCanvas');
+        const ctxS = starCanvas.getContext('2d');
+        let stars = [];
+
+        // Interactive Trail Logic
+        const trailCanvas = document.getElementById('trailCanvas');
+        const ctxT = trailCanvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            starCanvas.width = trailCanvas.width = window.innerWidth;
+            starCanvas.height = trailCanvas.height = window.innerHeight;
+            initStars();
+        }
+
+        class Star {
+            constructor() {
+                this.x = Math.random() * starCanvas.width;
+                this.y = Math.random() * starCanvas.height;
+                this.size = Math.random() * 2;
+                this.speed = Math.random() * 0.5;
+            }
+            draw() {
+                ctxS.fillStyle = "rgba(255, 255, 255, 0.8)";
+                ctxS.beginPath();
+                ctxS.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctxS.fill();
+            }
+            update() {
+                this.y -= this.speed;
+                if (this.y < 0) this.y = starCanvas.height;
+            }
+        }
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 200; i++) {
+                stars.push(new Star());
+            }
+        }
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 15 + 1;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+                this.color = `hsl(${Math.random() * 360}, 70%, 70%)`;
+                this.opacity = 1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.2) this.size -= 0.1;
+                this.opacity -= 0.01;
+            }
+            draw() {
+                ctxT.fillStyle = this.color;
+                ctxT.globalAlpha = this.opacity;
+                ctxT.beginPath();
+                ctxT.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctxT.fill();
+            }
+        }
+
+        function animate() {
+            ctxS.clearRect(0, 0, starCanvas.width, starCanvas.height);
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+
+            ctxT.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].opacity <= 0) {
+                    particles.splice(i, 1);
+                    i--;
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            for (let i = 0; i < 3; i++) {
+                particles.push(new Particle(e.x, e.y));
+            }
+        });
+
+        window.addEventListener('resize', resize);
+        resize();
+        animate();
+    </script>
+</body>
+</html>

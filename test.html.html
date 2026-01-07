@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vaanuva.com | Adventure Space</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;700&display=swap" rel="stylesheet">
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
+        canvas { position: fixed; top: 0; left: 0; z-index: 1; }
+
+        /* Initial Landing Page */
+        #landing-ui {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 100%);
+            transition: opacity 1s ease, transform 1.5s ease;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 4rem;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(106, 17, 203, 0.3);
+        }
+
+        h1 { font-family: 'Orbitron', sans-serif; color: white; font-size: 3rem; margin-bottom: 2rem; }
+
+        .cta-button {
+            display: inline-block;
+            padding: 18px 45px;
+            background: linear-gradient(45deg, #00f2fe, #4facfe);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: none;
+            transition: 0.3s;
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.4);
+        }
+
+        .cta-button:hover { transform: scale(1.1); box-shadow: 0 0 40px #00f2fe; }
+
+        /* Adventure Section (Initially Hidden) */
+        #adventure-ui {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 20;
+            display: none; /* Changed via JS */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        .story-container {
+            display: flex;
+            gap: 30px;
+            padding: 40px;
+            max-width: 90vw;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .story-container::-webkit-scrollbar { display: none; }
+
+        .story-card {
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #00f2fe;
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            transition: 0.4s;
+            cursor: pointer;
+        }
+
+        .story-card:hover { transform: translateY(-20px); box-shadow: 0 0 30px #00f2fe; }
+
+        .card-img { height: 150px; background: #222; border-radius: 10px; margin-bottom: 15px; }
+
+        .mission-header { font-family: 'Orbitron', sans-serif; text-align: center; color: white; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="landing-ui">
+        <div class="glass-card">
+            <h1>vaanuva.com</h1>
+            <button class="cta-button" onclick="startWarp()">EXPLORE UNIVERSE</button>
+        </div>
+    </div>
+
+    <div id="adventure-ui">
+        <div class="mission-header">
+            <h2 style="font-size: 3rem; margin: 0;">MISSION LOG</h2>
+            <p style="color: #00f2fe;">✦ SELECT A STORY ARC ✦</p>
+        </div>
+        <div class="story-container">
+            <div class="story-card">
+                <div class="card-img" style="background: linear-gradient(to bottom right, #6a11cb, #2575fc);"></div>
+                <h3>THE NEON VOID</h3>
+                <p>Lost in the echoes of a dying star, a signal begins to pulse...</p>
+                <small style="color:#00f2fe">ENTER MISSION →</small>
+            </div>
+            <div class="story-card">
+                <div class="card-img" style="background: linear-gradient(to bottom right, #ff0844, #ffb199);"></div>
+                <h3>RED PLANET RISING</h3>
+                <p>The colonies have gone silent. It's time to find out why.</p>
+                <small style="color:#00f2fe">ENTER MISSION →</small>
+            </div>
+            <div class="story-card">
+                <div class="card-img" style="background: linear-gradient(to bottom right, #00b09b, #96c93d);"></div>
+                <h3>EMERALD GALAXY</h3>
+                <p>Ancient technology hidden within the green gas clouds.</p>
+                <small style="color:#00f2fe">ENTER MISSION →</small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, stars, starGeo;
+        let speed = 0.5;
+        let warping = false;
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+            camera.position.z = 1;
+            camera.rotation.x = Math.PI/2;
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            starGeo = new THREE.BufferGeometry();
+            let starPositions = [];
+            for(let i=0; i<6000; i++) {
+                starPositions.push(Math.random() * 600 - 300);
+                starPositions.push(Math.random() * 600 - 300);
+                starPositions.push(Math.random() * 600 - 300);
+            }
+            starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+            
+            let starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.7 });
+            stars = new THREE.Points(starGeo, starMaterial);
+            scene.add(stars);
+
+            animate();
+        }
+
+        function startWarp() {
+            warping = true;
+            document.getElementById('landing-ui').style.opacity = '0';
+            document.getElementById('landing-ui').style.transform = 'scale(2)';
+            
+            // Wait for warp animation to "pass through"
+            setTimeout(() => {
+                document.getElementById('landing-ui').style.display = 'none';
+                document.getElementById('adventure-ui').style.display = 'flex';
+                setTimeout(() => {
+                    document.getElementById('adventure-ui').style.opacity = '1';
+                    warping = false; // Slow down once arrived
+                    speed = 0.2;
+                }, 100);
+            }, 2000);
+        }
+
+        function animate() {
+            let positions = starGeo.attributes.position.array;
+            for(let i=0; i<positions.length; i+=3) {
+                positions[i+1] -= speed;
+                if(positions[i+1] < -300) positions[i+1] = 300;
+            }
+            
+            if(warping && speed < 20) speed += 0.2;
+
+            starGeo.attributes.position.needsUpdate = true;
+            stars.rotation.y += 0.002;
+            
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaanuva Adventures | The Planet That Refused to Stay Still</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden; background: #0a0e27; font-family: 'Courier New', monospace; color: white; }
+        
+        #story-content { width: 100%; min-height: 100vh; padding: 3rem 2rem; background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 100%); }
+        
+        .back-btn { position: absolute; top: 20px; left: 20px; background: #00ffff; color: #0a0e27; border: none; padding: 0.75rem 1.5rem; border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; z-index: 5; }
+        .back-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px rgba(0, 255, 255, 0.8); }
+        
+        .story-container { max-width: 900px; margin: 0 auto; }
+        
+        .story-header { text-align: center; margin-bottom: 3rem; }
+        .story-header h1 { font-size: 2.5rem; color: #00ffff; text-shadow: 0 0 20px #00ffff; margin: 0; letter-spacing: 3px; }
+        .story-header .story-number { color: #a29bfe; font-size: 1.1rem; margin-bottom: 1rem; }
+        .story-header .story-subtitle { color: #a29bfe; font-size: 1.3rem; margin-top: 1rem; font-style: italic; }
+        
+        .story-text { line-height: 1.8; font-size: 1.1rem; color: #ddd; }
+        
+        .story-paragraph { margin-bottom: 2rem; padding: 1.5rem; background: rgba(26, 31, 58, 0.5); border-left: 3px solid #00ffff; border-radius: 5px; transition: all 0.3s ease; }
+        .story-paragraph:hover { background: rgba(26, 31, 58, 0.8); box-shadow: 0 0 15px rgba(0, 255, 255, 0.3); }
+        
+        .story-section-title { font-size: 1.5rem; color: #00ffff; margin: 2rem 0 1rem 0; letter-spacing: 2px; text-shadow: 0 0 10px #00ffff; }
+        
+        .scene-image { width: 100%; max-width: 800px; margin: 2.5rem auto; border-radius: 15px; border: 2px solid #00ffff; box-shadow: 0 0 30px rgba(0, 255, 255, 0.4), inset 0 0 20px rgba(0, 255, 255, 0.1); transition: all 0.3s ease; }
+        .scene-image:hover { box-shadow: 0 0 50px rgba(0, 255, 255, 0.6), inset 0 0 30px rgba(0, 255, 255, 0.2); }
+        .scene-caption { text-align: center; color: #a29bfe; font-size: 0.95rem; font-style: italic; margin-top: 1rem; }
+        
+        .emoji-large { font-size: 2rem; margin-right: 0.5rem; }
+        
+        .story-divider { text-align: center; margin: 3rem 0; font-size: 1.5rem; color: #00ffff; opacity: 0.5; }
+        
+        .action-text { color: #ffff00; font-weight: bold; text-shadow: 0 0 10px #ffff00; }
+        .dialogue { color: #a29bfe; font-style: italic; }
+        
+        .end-section { text-align: center; margin-top: 4rem; padding: 2rem; background: rgba(0, 255, 255, 0.1); border: 2px solid #00ffff; border-radius: 15px; }
+        .end-section h2 { color: #00ffff; margin-top: 0; }
+        .continue-btn { background: linear-gradient(135deg, #00ffff, #0099cc); color: #0a0e27; border: none; padding: 1rem 2.5rem; border-radius: 30px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; margin-top: 1rem; }
+        .continue-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(0, 255, 255, 0.8); }
+        
+        @media (max-width: 768px) {
+            .story-header h1 { font-size: 2rem; }
+            .story-paragraph { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="back-btn" onclick="goBack()">← BACK</button>
+
+    <div id="story-content">
+        <div class="story-container">
+            <div class="story-header">
+                <div class="story-number">STORY 02</div>
+                <h1>The Planet That Refused to Stay Still</h1>
+                <p class="story-subtitle">A Vaanuva Adventure</p>
+            </div>
+
+            <div class="story-text">
+                <div class="story-paragraph">
+                    Captain Nihaal liked calm days in space.
+                    <br><br>
+                    This was not one of them.
+                </div>
+
+                <div class="story-paragraph">
+                    The main screen blinked brightly as a small blue planet appeared ahead, spinning slowly like it was thinking very hard about something.
+                    <br><br>
+                    <span class="dialogue">"Navigator," Captain Nihaal said calmly, "set course for landing."</span>
+                </div>
+
+                <div class="story-paragraph">
+                    Zivan smiled, fingers moving fast over the controls.
+                    <br>
+                    <span class="dialogue">"Already done, Captain. Smooth approach."</span>
+                    <br><br>
+                    The planet suddenly moved sideways.
+                    <br><br>
+                    The ship missed it completely.
+                </div>
+
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400'%3E%3Cdefs%3E%3ClinearGradient id='space' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%230a0e27;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%231a1a3e;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23space)' width='800' height='400'/%3E%3Ccircle cx='150' cy='200' r='60' fill='%2300ccff' opacity='0.8'/%3E%3Crect x='500' y='150' width='80' height='50' fill='%2300ffff' rx='5' opacity='0.7'/%3E%3Ccircle cx='600' cy='100' r='15' fill='%23ffff00' opacity='0.6'/%3E%3Ccircle cx='100' cy='100' r='10' fill='%23a29bfe' opacity='0.5'/%3E%3C/svg%3E" alt="The blue planet dodging the approaching ship" class="scene-image">
+                <p class="scene-caption">🌍 A planet with a mind of its own 🌍</p>
+
+                <div class="story-paragraph">
+                    Zivan blinked.
+                    <br>
+                    <span class="dialogue">"…That's new."</span>
+                    <br><br>
+                    <span class="dialogue">"Pilot?" Nihaal asked.</span>
+                    <br><br>
+                    Haibaan leaned forward, eyes shining.
+                    <br>
+                    <span class="dialogue">"No worries. I've got this."</span>
+                </div>
+
+                <div class="story-paragraph">
+                    The ship turned, dipped, and approached again—perfect angle, perfect speed.
+                    <br><br>
+                    The planet dodged.
+                    <br><br>
+                    Not exploded.
+                    <br>
+                    Not disappeared.
+                    <br><br>
+                    <span class="action-text">Dodged.</span>
+                </div>
+
+                <div class="story-paragraph">
+                    Haibaan stared at the screen.
+                    <br>
+                    <span class="dialogue">"Did the planet just… sidestep?"</span>
+                </div>
+
+                <div class="story-divider">🌍 ◆ 🌍</div>
+
+                <div class="story-paragraph">
+                    In the engine room, Adhaan felt the ship shake.
+                    <br>
+                    <span class="dialogue">"I swear," he muttered, tightening a bolt, "if this is another fake gravity problem—"</span>
+                    <br><br>
+                    The ship honked.
+                    <br><br>
+                    Adhaan sighed.
+                    <br>
+                    <span class="dialogue">"…Why does it honk?"</span>
+                </div>
+
+                <div class="story-paragraph">
+                    A soft voice echoed through the ship.
+                    <br><br>
+                    <span class="action-text">"ANALYSIS COMPLETE. THE PLANET IS AVOIDING US."</span>
+                    <br>
+                    said Shaadh, the ship's AI.
+                </div>
+
+                <div class="story-paragraph">
+                    Silence.
+                    <br><br>
+                    Izaan, already scanning wildly, grinned.
+                    <br>
+                    <span class="dialogue">"A moving planet! Do you know how rare that is? This is amazing!"</span>
+                </div>
+
+                <div class="story-paragraph">
+                    Nihaal raised an eyebrow.
+                    <br>
+                    <span class="dialogue">"It's rude."</span>
+                    <br><br>
+                    Suddenly, a message appeared on the screen:
+                    <br><br>
+                    <span class="action-text">HELLO. PLEASE STOP TRYING TO LAND ON ME.</span>
+                </div>
+
+                <div class="story-paragraph">
+                    Everyone stared.
+                    <br><br>
+                    Rayyan adjusted his medical scanner.
+                    <br>
+                    <span class="dialogue">"Good news: it's not hostile. Bad news: I think it's anxious."</span>
+                </div>
+
+                <div class="story-paragraph">
+                    Another message appeared:
+                    <br><br>
+                    <span class="action-text">I JUST LEARNED HOW TO MOVE. I AM PRACTICING.</span>
+                </div>
+
+                <div class="story-paragraph">
+                    <span class="dialogue">"Practicing?" Haibaan repeated.</span>
+                    <br>
+                    <span class="dialogue">"That explains the dodging," Zivan said. "Terrible timing though."</span>
+                    <br><br>
+                    The planet wobbled slightly.
+                    <br><br>
+                    <span class="action-text">SORRY. I PANIC WHEN SHIPS GET CLOSE.</span>
+                </div>
+
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400'%3E%3Cdefs%3E%3ClinearGradient id='calm' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%230a0e27;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%231a1a3e;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23calm)' width='800' height='400'/%3E%3Ccircle cx='400' cy='200' r='70' fill='%2300ccff' opacity='0.8'/%3E%3Ccircle cx='400' cy='200' r='60' fill='%2300ccff' opacity='0.3'/%3E%3Crect x='50' y='100' width='100' height='70' fill='%2300ffff' rx='5' opacity='0.6'/%3E%3Crect x='650' y='250' width='120' height='80' fill='%2300ffff' rx='5' opacity='0.5'/%3E%3C/svg%3E" alt="The crew deciding to give the planet space" class="scene-image">
+                <p class="scene-caption">✨ Understanding brings calm to the anxious planet ✨</p>
+
+                <div class="story-paragraph">
+                    Captain Nihaal folded his arms.
+                    <br>
+                    <span class="dialogue">"We're explorers, not bullies. Let's give it space."</span>
+                    <br><br>
+                    The planet immediately relaxed.
+                    <br><br>
+                    Then accidentally spun.
+                    <br>
+                    Fast.
+                </div>
+
+                <div class="story-paragraph">
+                    Izaan laughed.
+                    <br>
+                    <span class="dialogue">"It's like a baby planet!"</span>
+                    <br><br>
+                    Adhaan grumbled, <span class="dialogue">"If it bumps into us, I'm charging it for repairs."</span>
+                    <br><br>
+                    Shaadh chimed in:
+                    <br>
+                    <span class="action-text">"SUGGESTION: WE STAY STILL. LET THE PLANET PRACTICE."</span>
+                </div>
+
+                <div class="story-paragraph">
+                    Rayyan nodded.
+                    <br>
+                    <span class="dialogue">"Slow and calm. Works for people too."</span>
+                </div>
+
+                <div class="story-paragraph">
+                    So they waited.
+                    <br><br>
+                    The planet tried moving left.
+                    <br>
+                    Stopped.
+                    <br>
+                    Tried right.
+                    <br>
+                    Stopped.
+                    <br><br>
+                    <span class="action-text">Everyone clapped when it succeeded.</span>
+                    <br><br>
+                    The planet glowed brighter.
+                    <br><br>
+                    <span class="action-text">THANK YOU. YOU ARE VERY PATIENT.</span>
+                </div>
+
+                <div class="story-paragraph">
+                    Haibaan smiled.
+                    <br>
+                    <span class="dialogue">"Don't get used to that."</span>
+                </div>
+
+                <div class="story-divider">✨ ◆ ✨</div>
+
+                <div class="story-paragraph">
+                    Eventually, the planet stayed perfectly still.
+                    <br><br>
+                    For five whole seconds.
+                    <br><br>
+                    Then a moon bumped it.
+                    <br><br>
+                    The planet bumped space.
+                    <br><br>
+                    The ship honked again.
+                    <br><br>
+                    Everyone froze.
+                    <br><br>
+                    <span class="action-text">…DID YOU JUST HONK AT ME?</span>
+                    <br>
+                    the planet asked.
+                </div>
+
+                <div class="story-paragraph">
+                    Nihaal sighed.
+                    <br>
+                    <span class="dialogue">"That one's on us."</span>
+                </div>
+
+                <div class="story-paragraph">
+                    As the crew prepared to leave, the planet sent one last message:
+                    <br><br>
+                    <span class="action-text">SAFE TRAVELS. PLEASE DO NOT TELL OTHER SHIPS I CAN MOVE YET.</span>
+                    <br><br>
+                    Zivan grinned.
+                    <br>
+                    <span class="dialogue">"Our secret."</span>
+                </div>
+
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400'%3E%3Cdefs%3E%3ClinearGradient id='goodbye' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%236b11cb;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%230a0e27;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%231a1a3e;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23goodbye)' width='800' height='400'/%3E%3Ccircle cx='200' cy='200' r='60' fill='%2300ccff' opacity='0.6'/%3E%3Crect x='500' y='100' width='150' height='100' fill='%2300ffff' rx='5' opacity='0.6'/%3E%3Ccircle cx='150' cy='100' r='20' fill='%23ffff00' opacity='0.5'/%3E%3Ccircle cx='650' cy='300' r='15' fill='%23a29bfe' opacity='0.4'/%3E%3Cpolygon points='400,50 420,100 380,100' fill='%2300ffff' opacity='0.4'/%3E%3C/svg%3E" alt="The ship flying away as the planet waves goodbye" class="scene-image">
+                <p class="scene-caption">🚀 Safe travels to new adventures 🚀</p>
+
+                <div class="story-paragraph">
+                    The ship flew away smoothly, stars twinkling again.
+                    <br><br>
+                    Rayyan leaned back.
+                    <br>
+                    <span class="dialogue">"Best day I've had in weeks."</span>
+                    <br><br>
+                    Izaan was already writing notes.
+                    <br><br>
+                    Adhaan checked the engines.
+                    <br><br>
+                    Haibaan smiled.
+                    <br><br>
+                    Shaadh quietly recorded everything.
+                    <br><br>
+                    Captain Nihaal looked ahead at the endless universe.
+                    <br><br>
+                    <span class="dialogue">"Alright," he said. "On to the next adventure."</span>
+                </div>
+
+                <div class="story-paragraph">
+                    Far behind them, the planet tried moving again.
+                    <br><br>
+                    And immediately crashed into a star map.
+                </div>
+
+                <div class="story-divider">✨ To be continued… ✨</div>
+
+                <div class="end-section">
+                    <h2>The End... Or Is It?</h2>
+                    <p>The crew continues their journey through Vaanuva. What strange wonders will they discover next?</p>
+                    <button class="continue-btn" onclick="goBack()">← BACK TO ADVENTURES</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function goBack() {
+            window.location.href = 'adventures.html';
+        }
+    </script>
+</body>
+</html>

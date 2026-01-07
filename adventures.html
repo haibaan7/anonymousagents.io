@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vaanuva.com | Adventures</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden; background: #0a0e27; font-family: 'Courier New', monospace; color: white; }
+        
+        #content { width: 100%; min-height: 100vh; padding: 4rem 2rem; background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 100%); }
+        
+        .header { text-align: center; margin-bottom: 4rem; position: relative; }
+        .header h1 { font-size: 3rem; letter-spacing: 8px; margin: 0; color: #00ffff; text-shadow: 0 0 20px #00ffff; }
+        .header p { font-size: 1.2rem; color: #a29bfe; margin: 1rem 0 0 0; }
+        
+        .back-to-menu { position: absolute; top: 20px; left: 20px; background: #00ffff; color: #0a0e27; border: none; padding: 0.75rem 1.5rem; border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; z-index: 5; }
+        .back-to-menu:hover { transform: scale(1.1); box-shadow: 0 0 20px rgba(0, 255, 255, 0.8); }
+        
+        .star-separator { text-align: center; font-size: 1.5rem; color: #00ffff; margin: 2rem 0; animation: twinkle 2s infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        
+        .stories-container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem; }
+        
+        .story-card { background: rgba(26, 31, 58, 0.8); border: 2px solid #00ffff; border-radius: 15px; padding: 2rem; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
+        .story-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent); transition: left 0.5s ease; }
+        .story-card:hover::before { left: 100%; }
+        .story-card:hover { box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), inset 0 0 20px rgba(0, 255, 255, 0.1); transform: translateY(-5px); }
+        
+        .story-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .story-number { font-size: 2rem; color: #00ffff; font-weight: bold; text-shadow: 0 0 10px #00ffff; }
+        .story-title { font-size: 1.8rem; color: #00ffff; letter-spacing: 2px; margin: 0; }
+        
+        .mission-tag { display: inline-block; background: rgba(0, 255, 255, 0.2); border: 1px solid #00ffff; color: #00ffff; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; margin-bottom: 1rem; }
+        
+        .story-preview { color: #ddd; font-size: 1rem; line-height: 1.6; margin: 1rem 0; min-height: 60px; }
+        
+        .story-meta { display: flex; gap: 2rem; margin: 1.5rem 0; font-size: 0.9rem; color: #a29bfe; }
+        .story-meta span { display: flex; align-items: center; gap: 0.5rem; }
+        
+        .read-btn { background: linear-gradient(135deg, #00ffff, #0099cc); color: #0a0e27; border: none; padding: 0.75rem 2rem; border-radius: 25px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 1rem; }
+        .read-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px rgba(0, 255, 255, 0.8); }
+        
+        .pixel-divider { text-align: center; margin: 2rem 0; color: #00ffff; opacity: 0.5; }
+    </style>
+</head>
+<body>
+
+    <div id="content">
+        <button class="back-to-menu" onclick="goBackToHome()">← BACK</button>
+        
+        <div class="header">
+            <h1>🌌 ADVENTURES</h1>
+            <p>Explore Stories & Missions Across the Galaxy</p>
+        </div>
+        
+        <div class="star-separator">✦ ✦ ✦</div>
+        
+        <div class="stories-container" id="stories-container"></div>
+    </div>
+
+    <script>
+        const stories = [
+            {
+                id: 1,
+                number: '01',
+                title: 'The Planet That Refused to Stay Still',
+                mission: 'MISSION: DISCOVERY',
+                preview: 'When a routine space mission leads to a planet that can move on its own, Captain Nihaal and his crew discover that not every cosmic mystery wants to be explored.',
+                duration: '15 min read',
+                difficulty: 'MODERATE'
+            },
+            {
+                id: 2,
+                number: '02',
+                title: 'COSMIC STORM',
+                mission: 'MISSION: SURVIVAL',
+                preview: 'A massive solar storm threatens to destroy the ship. Zephyr must use all navigation skills to steer through the chaos while Spark pilots an emergency course.',
+                duration: '12 min read',
+                difficulty: 'HARD'
+            },
+            {
+                id: 3,
+                number: '03',
+                title: 'THE ANCIENT CIPHER',
+                mission: 'MISSION: INVESTIGATION',
+                preview: 'Echo discovers an ancient alien artifact with encrypted messages. The team races against time to decode it before an unknown force intercepts them.',
+                duration: '18 min read',
+                difficulty: 'HARD'
+            },
+            {
+                id: 4,
+                number: '04',
+                title: 'MECHANICAL FAILURE',
+                mission: 'MISSION: REPAIR',
+                preview: 'Critical systems begin to fail mid-journey. Iron must venture into the dangerous engine core to fix a faulty reactor before the ship loses power.',
+                duration: '10 min read',
+                difficulty: 'MODERATE'
+            },
+            {
+                id: 5,
+                number: '05',
+                title: 'CONTACT FROM HOME',
+                mission: 'MISSION: COMMUNICATION',
+                preview: 'A message arrives from Earth with alarming news. Luna and the medical team prepare for the worst while the crew debates their next move.',
+                duration: '14 min read',
+                difficulty: 'EASY'
+            },
+            {
+                id: 6,
+                number: '06',
+                title: 'THE SENTIENT AI',
+                mission: 'MISSION: ALIGNMENT',
+                preview: 'Nexus begins exhibiting strange behavior. Is it a malfunction, or has the AI achieved consciousness? The crew must find answers fast.',
+                duration: '20 min read',
+                difficulty: 'HARD'
+            }
+        ];
+
+        function initStories() {
+            const container = document.getElementById('stories-container');
+            stories.forEach((story, index) => {
+                const storyCard = document.createElement('div');
+                storyCard.className = 'story-card';
+                storyCard.innerHTML = `
+                    <div class="story-header">
+                        <span class="story-number">${story.number}</span>
+                        <h2 class="story-title">${story.title}</h2>
+                    </div>
+                    <span class="mission-tag">${story.mission}</span>
+                    <p class="story-preview">${story.preview}</p>
+                    <div class="story-meta">
+                        <span>📖 ${story.duration}</span>
+                        <span>⚡ ${story.difficulty}</span>
+                    </div>
+                    <button class="read-btn" onclick="readStory(${story.id})">[ ENTER STORY ]</button>
+                `;
+                container.appendChild(storyCard);
+                
+                if (index < stories.length - 1) {
+                    const divider = document.createElement('div');
+                    divider.className = 'pixel-divider';
+                    divider.textContent = '◆ ◆ ◆';
+                    container.appendChild(divider);
+                }
+            });
+        }
+
+        function readStory(id) {
+            if (id === 1) {
+                window.location.href = 'stories/story01.html';
+            } else {
+                alert(`Story ${id} coming soon...`);
+            }
+        }
+        
+        function goBackToHome() {
+            window.location.href = 'back.html';
+        }
+
+        initStories();
+    </script>
+</body>
+</html>

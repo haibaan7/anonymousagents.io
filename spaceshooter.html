@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonymous Agents | Space Shooter</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
+        
+        #gameContainer { position: relative; width: 100vw; height: 100vh; background: #0a0e27; }
+        
+        #gameCanvas { display: block; background: linear-gradient(180deg, #0a0e27 0%, #1a1a3e 100%); cursor: none; }
+        
+        #ui { position: absolute; top: 20px; left: 20px; color: #00ffff; font-size: 1.2rem; text-shadow: 0 0 10px #00ffff; }
+        #score { margin-bottom: 15px; }
+        #health { margin-bottom: 15px; }
+        #level { margin-bottom: 15px; }
+        
+        #startScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 14, 39, 0.95); display: flex; justify-content: center; align-items: center; z-index: 100; flex-direction: column; }
+        
+        #startScreen h1 { font-size: 3.5rem; color: #00ffff; text-shadow: 0 0 30px #00ffff; margin-bottom: 2rem; letter-spacing: 3px; }
+        #startScreen p { color: #a29bfe; font-size: 1.2rem; max-width: 500px; text-align: center; margin-bottom: 2rem; line-height: 1.8; }
+        
+        .play-btn { background: linear-gradient(135deg, #00ffff, #0099cc); color: #0a0e27; border: none; padding: 1rem 3rem; border-radius: 30px; font-weight: bold; font-size: 1.2rem; cursor: pointer; transition: all 0.3s ease; letter-spacing: 2px; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+        .play-btn:hover { transform: scale(1.1); box-shadow: 0 0 40px rgba(0, 255, 255, 0.8); }
+        
+        #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: none; justify-content: center; align-items: center; z-index: 100; flex-direction: column; }
+        
+        #gameOverScreen h1 { font-size: 3rem; color: #ff0055; text-shadow: 0 0 30px #ff0055; margin-bottom: 1rem; }
+        #finalScore { color: #00ffff; font-size: 2rem; text-shadow: 0 0 10px #00ffff; margin-bottom: 2rem; }
+        
+        #instructions { position: absolute; bottom: 20px; left: 20px; color: #a29bfe; font-size: 0.9rem; }
+        
+        @media (max-width: 768px) {
+            #startScreen h1 { font-size: 2.5rem; }
+            #ui { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="ui">
+            <div id="score">SCORE: 0</div>
+            <div id="health">HEALTH: ❤️❤️❤️</div>
+            <div id="level">LEVEL: 1</div>
+        </div>
+        
+        <div id="startScreen">
+            <h1>🚀 SPACE SHOOTER</h1>
+            <p>Destroy the asteroids and survive as long as you can!<br>Collect power-ups for special abilities.</p>
+            <button class="play-btn" onclick="startGame()">[ PLAY GAME ]</button>
+            <div id="instructions" style="position: absolute; bottom: 40px; text-align: center; width: 100%;">
+                <p>ARROW KEYS or WASD to Move | SPACEBAR or CLICK to Shoot</p>
+            </div>
+        </div>
+        
+        <div id="gameOverScreen">
+            <h1>GAME OVER</h1>
+            <div id="finalScore"></div>
+            <button class="play-btn" onclick="location.reload()">[ PLAY AGAIN ]</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let gameActive = false;
+        let score = 0;
+        let health = 3;
+        let level = 1;
+        let waveCount = 0;
+        
+        // Player
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height - 50,
+            width: 40,
+            height: 40,
+            speed: 5,
+            velX: 0,
+            velY: 0,
+            shoot: false
+        };
+        
+        let bullets = [];
+        let asteroids = [];
+        let particles = [];
+        let powerUps = [];
+        let stars = [];
+        let spawnTimer = 0;
+        let lastWaveTime = 0;
+        
+        const keys = {};
+        
+        // Initialize stars
+        function initStars() {
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5,
+                    opacity: Math.random() * 0.5 + 0.5
+                });
+            }
+        }
+        
+        // Bullet class
+        class Bullet {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 5;
+                this.height = 15;
+                this.speed = 8;
+            }
+            
+            update() { this.y -= this.speed; }
+            
+            draw() {
+                ctx.fillStyle = '#00ffff';
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height);
+                ctx.shadowBlur = 0;
+            }
+            
+            isOffScreen() { return this.y < 0; }
+        }
+        
+        // Asteroid class
+        class Asteroid {
+            constructor(x, y, size = 3) {
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.radius = size * 10;
+                this.speed = Math.random() * 2 + 1;
+                this.velX = (Math.random() - 0.5) * 3;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+            }
+            
+            update() {
+                this.y += this.speed;
+                this.x += this.velX;
+                this.rotation += this.rotationSpeed;
+                
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                
+                ctx.fillStyle = `hsl(${Math.random() * 60 + 240}, 100%, 50%)`;
+                ctx.shadowColor = `hsl(${Math.random() * 60 + 240}, 100%, 50%)`;
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+            
+            isOffScreen() { return this.y > canvas.height; }
+        }
+        
+        // Power-up class
+        class PowerUp {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.type = type; // 'shield', 'rapid', 'health'
+                this.size = 20;
+                this.speed = 2;
+            }
+            
+            update() { this.y += this.speed; }
+            
+            draw() {
+                ctx.fillStyle = this.type === 'shield' ? '#ffff00' : this.type === 'rapid' ? '#ff00ff' : '#00ff00';
+                ctx.shadowColor = ctx.fillStyle;
+                ctx.shadowBlur = 15;
+                ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+                ctx.shadowBlur = 0;
+                ctx.fillText(this.type === 'shield' ? '🛡️' : this.type === 'rapid' ? '⚡' : '❤️', this.x - 8, this.y + 6);
+            }
+            
+            isOffScreen() { return this.y > canvas.height; }
+        }
+        
+        // Particle class
+        class Particle {
+            constructor(x, y, vx, vy, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.color = color;
+                this.life = 30;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life--;
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life / 30;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+        
+        function drawPlayer() {
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            
+            // Main body - sleeker design
+            ctx.fillStyle = '#00ffff';
+            ctx.shadowColor = '#00ffff';
+            ctx.shadowBlur = 20;
+            
+            // Cockpit
+            ctx.fillRect(-8, -18, 16, 12);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(-5, -15, 10, 6);
+            
+            // Main fuselage
+            ctx.fillStyle = '#00ffff';
+            ctx.beginPath();
+            ctx.moveTo(0, -18);
+            ctx.lineTo(-12, 15);
+            ctx.lineTo(-8, 20);
+            ctx.lineTo(0, 12);
+            ctx.lineTo(8, 20);
+            ctx.lineTo(12, 15);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Wings glow
+            ctx.strokeStyle = '#0099cc';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-15, 5);
+            ctx.lineTo(-12, 15);
+            ctx.moveTo(15, 5);
+            ctx.lineTo(12, 15);
+            ctx.stroke();
+            
+            // Thruster flames
+            ctx.fillStyle = '#ff6600';
+            ctx.shadowColor = '#ff6600';
+            ctx.shadowBlur = 15;
+            const flameHeight = Math.sin(Date.now() / 50) * 5 + 12;
+            ctx.beginPath();
+            ctx.moveTo(-6, 20);
+            ctx.lineTo(-10, 20 + flameHeight);
+            ctx.lineTo(-6, 25);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.moveTo(6, 20);
+            ctx.lineTo(10, 20 + flameHeight);
+            ctx.lineTo(6, 25);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Core glow
+            ctx.fillStyle = '#ffff00';
+            ctx.shadowColor = '#ffff00';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(0, 0, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        function spawnAsteroids() {
+            const count = Math.min(3 + level * 2, 15);
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * canvas.width;
+                const size = Math.max(1, 3 - Math.floor(level / 3));
+                asteroids.push(new Asteroid(x, -50, size));
+            }
+            waveCount++;
+            lastWaveTime = Date.now();
+        }
+        
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameOverScreen').style.display = 'none';
+            gameActive = true;
+            score = 0;
+            health = 3;
+            level = 1;
+            waveCount = 0;
+            spawnTimer = 0;
+            lastWaveTime = Date.now();
+            bullets = [];
+            asteroids = [];
+            particles = [];
+            powerUps = [];
+            player.x = canvas.width / 2;
+            player.y = canvas.height - 50;
+            initStars();
+            spawnAsteroids();
+            gameLoop();
+        }
+        
+        function gameLoop() {
+            // Clear canvas
+            ctx.fillStyle = '#0a0e27';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw stars
+            ctx.fillStyle = '#ffffff';
+            stars.forEach(star => {
+                ctx.globalAlpha = star.opacity;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+            
+            if (!gameActive) return;
+            
+            // Update player
+            player.velX = 0;
+            if (keys['ArrowLeft'] || keys['a']) player.velX = -player.speed;
+            if (keys['ArrowRight'] || keys['d']) player.velX = player.speed;
+            
+            player.x += player.velX;
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvas.width) player.x = canvas.width;
+            
+            // Draw player
+            drawPlayer();
+            
+            // Update and draw bullets
+            bullets = bullets.filter(b => !b.isOffScreen());
+            bullets.forEach(b => {
+                b.update();
+                b.draw();
+            });
+            
+            // Update and draw asteroids
+            asteroids.forEach(a => a.update());
+            asteroids.forEach(a => a.draw());
+            
+            // Collision detection: bullets & asteroids
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                for (let j = asteroids.length - 1; j >= 0; j--) {
+                    const b = bullets[i];
+                    const a = asteroids[j];
+                    const dist = Math.hypot(b.x - a.x, b.y - a.y);
+                    
+                    if (dist < a.radius) {
+                        bullets.splice(i, 1);
+                        score += 10 * a.size;
+                        
+                        // Create particles
+                        for (let k = 0; k < 8; k++) {
+                            const angle = (Math.PI * 2 * k) / 8;
+                            particles.push(new Particle(a.x, a.y, Math.cos(angle) * 3, Math.sin(angle) * 3, a.fillStyle || `hsl(${Math.random() * 60 + 240}, 100%, 50%)`));
+                        }
+                        
+                        // Split asteroid or remove
+                        if (a.size > 1) {
+                            asteroids.push(new Asteroid(a.x - 20, a.y, a.size - 1));
+                            asteroids.push(new Asteroid(a.x + 20, a.y, a.size - 1));
+                            if (Math.random() > 0.7) powerUps.push(new PowerUp(a.x, a.y, ['shield', 'rapid', 'health'][Math.floor(Math.random() * 3)]));
+                        }
+                        
+                        asteroids.splice(j, 1);
+                        break;
+                    }
+                }
+            }
+            
+            // Collision detection: player & asteroids
+            asteroids.forEach(a => {
+                const dist = Math.hypot(player.x - a.x, player.y - a.y);
+                if (dist < a.radius + 20) {
+                    health--;
+                    asteroids = asteroids.filter(ast => ast !== a);
+                    
+                    if (health <= 0) {
+                        gameActive = false;
+                        document.getElementById('gameOverScreen').style.display = 'flex';
+                        document.getElementById('finalScore').textContent = `FINAL SCORE: ${score}`;
+                    }
+                }
+            });
+            
+            // Update and draw power-ups
+            powerUps = powerUps.filter(p => !p.isOffScreen());
+            powerUps.forEach(p => {
+                p.update();
+                p.draw();
+                
+                if (Math.hypot(player.x - p.x, player.y - p.y) < 30) {
+                    powerUps.splice(powerUps.indexOf(p), 1);
+                    if (p.type === 'health' && health < 3) health++;
+                    if (p.type === 'shield') health += 2;
+                    if (p.type === 'rapid') score += 50;
+                }
+            });
+            
+            // Update and draw particles
+            particles = particles.filter(p => p.life > 0);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            
+            // Wave spawning system - FIXED
+            const currentTime = Date.now();
+            const timeSinceLastWave = currentTime - lastWaveTime;
+            const waveDelay = Math.max(2000 - (level * 100), 500); // Faster waves at higher levels
+            
+            if (asteroids.length === 0 && timeSinceLastWave > waveDelay) {
+                level = Math.floor(waveCount / 2) + 1;
+                spawnAsteroids();
+            } else if (asteroids.length < Math.max(1, 3 + level - 2) && timeSinceLastWave > waveDelay * 1.5) {
+                // Spawn additional asteroids if count gets too low
+                const x = Math.random() * canvas.width;
+                const size = Math.max(1, 3 - Math.floor(level / 3));
+                asteroids.push(new Asteroid(x, -50, size));
+            }
+            
+            // Increase difficulty over time
+            const difficultyMultiplier = 1 + (level * 0.3);
+            
+            // Update player speed
+            player.speed = 5 + (level * 0.5);
+            
+            // Update UI
+            document.getElementById('score').textContent = `SCORE: ${score}`;
+            document.getElementById('health').textContent = `HEALTH: ${'❤️'.repeat(Math.max(0, health))}`;
+            document.getElementById('level').textContent = `LEVEL: ${level}`;
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Event listeners
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (e.key === ' ') {
+                e.preventDefault();
+                bullets.push(new Bullet(player.x, player.y - 20));
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => { keys[e.key] = false; });
+        
+        canvas.addEventListener('click', () => {
+            if (gameActive) bullets.push(new Bullet(player.x, player.y - 20));
+        });
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        initStars();
+    </script>
+</body>
+</html>
