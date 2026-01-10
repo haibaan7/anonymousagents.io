@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaanuva | Terminal Decryption</title>
+    <style>
+        :root {
+            --neon-blue: #00ffff;
+            --dark-bg: #0a0e27;
+            --error-red: #ff4d4d;
+            --success-green: #00ff88;
+            --warning-yellow: #ffcc00;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: var(--dark-bg);
+            font-family: 'Courier New', monospace;
+            color: white;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Rules & Reward Overlays */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 14, 39, 0.95);
+            z-index: 2000; display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .modal-box {
+            max-width: 500px; width: 90%; background: #1a1f3a;
+            border: 2px solid var(--neon-blue); padding: 2rem;
+            border-radius: 15px; text-align: center;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.3);
+        }
+
+        .hidden { display: none !important; opacity: 0; }
+
+        .btn-main {
+            background: var(--neon-blue); color: #0a0e27;
+            border: none; padding: 1rem 2rem; border-radius: 5px;
+            font-weight: bold; cursor: pointer; margin-top: 1.5rem;
+            font-family: 'Courier New';
+        }
+
+        /* Game UI */
+        .game-container {
+            width: 90%; max-width: 450px;
+            background: rgba(26, 31, 58, 0.9);
+            border: 1px solid var(--neon-blue);
+            padding: 1.5rem; border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .digit-row { display: flex; justify-content: center; gap: 10px; margin: 1.5rem 0; }
+        .digit {
+            width: 45px; height: 55px; border: 2px solid var(--neon-blue);
+            font-size: 1.8rem; line-height: 55px; border-radius: 5px; color: var(--neon-blue);
+        }
+
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 250px; margin: 0 auto; }
+        .num-btn {
+            background: transparent; border: 1px solid var(--neon-blue);
+            color: var(--neon-blue); padding: 0.8rem; border-radius: 5px; cursor: pointer;
+        }
+        .num-btn:hover { background: var(--neon-blue); color: #000; }
+
+        .history {
+            margin-top: 1.5rem; max-height: 120px; overflow-y: auto;
+            font-size: 0.75rem; text-align: left; border-top: 1px solid #333; padding-top: 0.5rem;
+        }
+
+        #reward-image {
+            width: 100%; border-radius: 10px; margin-top: 1rem;
+            border: 1px solid var(--success-green);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="rules-overlay" class="overlay">
+        <div class="modal-box">
+            <h1 style="color: var(--neon-blue);">MISSION: BYPASS</h1>
+            <p style="text-align: left; line-height: 1.6;">
+                The ship's engine is locked. Decrypt the 4-digit code:<br><br>
+                1. Enter 4 digits and press SUBMIT.<br>
+                2. <span style="color: var(--success-green);">CORRECT</span>: Digit is in the right spot.<br>
+                3. <span style="color: var(--warning-yellow);">MISPLACED</span>: Digit is in the code but wrong spot.<br>
+                4. Unlock the terminal to receive classified data.
+            </p>
+            <button class="btn-main" onclick="closeRules()">START MISSION</button>
+        </div>
+    </div>
+
+    <div id="reward-overlay" class="overlay hidden">
+        <div class="modal-box" style="border-color: var(--success-green);">
+            <h1 style="color: var(--success-green);">ACCESS GRANTED</h1>
+            <p>Classified Intelligence Recovered:</p>
+            <img id="reward-image" src="images/secret_blueprint.png" alt="Classified Ship Blueprint">
+            <p style="font-size: 0.8rem; margin-top: 1rem;">The Vaanuva engines run on "Stellar Mist." This secret is yours to keep, Agent.</p>
+            <button class="btn-main" style="background: var(--success-green);" onclick="location.reload()">RE-LOCK TERMINAL</button>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <h2 id="status" style="font-size: 1rem; color: #a29bfe;">WAITING FOR INPUT...</h2>
+        
+        <div class="digit-row">
+            <div class="digit" id="d0">_</div>
+            <div class="digit" id="d1">_</div>
+            <div class="digit" id="d2">_</div>
+            <div class="digit" id="d3">_</div>
+        </div>
+
+        <div class="numpad">
+            <button class="num-btn" onclick="press(1)">1</button>
+            <button class="num-btn" onclick="press(2)">2</button>
+            <button class="num-btn" onclick="press(3)">3</button>
+            <button class="num-btn" onclick="press(4)">4</button>
+            <button class="num-btn" onclick="press(5)">5</button>
+            <button class="num-btn" onclick="press(6)">6</button>
+            <button class="num-btn" onclick="press(7)">7</button>
+            <button class="num-btn" onclick="press(8)">8</button>
+            <button class="num-btn" onclick="press(9)">9</button>
+            <button class="num-btn" style="border-color: var(--error-red); color: var(--error-red);" onclick="clearAll()">CLR</button>
+            <button class="num-btn" onclick="press(0)">0</button>
+            <button class="num-btn" style="border-color: var(--success-green); color: var(--success-green);" onclick="submit()">GO</button>
+        </div>
+
+        <div class="history" id="logs">
+            <div style="opacity: 0.5;">DECRYPTION LOGS:</div>
+        </div>
+    </div>
+
+    <script>
+        let secret = [];
+        let guess = [];
+        let attempts = 0;
+
+        function init() {
+            secret = Array.from({length: 4}, () => Math.floor(Math.random() * 10));
+            console.log("Secret: " + secret.join(''));
+        }
+
+        function closeRules() { document.getElementById('rules-overlay').classList.add('hidden'); }
+
+        function press(n) {
+            if(guess.length < 4) {
+                guess.push(n);
+                document.getElementById(`d${guess.length-1}`).textContent = n;
+            }
+        }
+
+        function clearAll() {
+            guess = [];
+            for(let i=0; i<4; i++) document.getElementById(`d${i}`).textContent = "_";
+        }
+
+        function submit() {
+            if(guess.length < 4) return;
+            attempts++;
+            
+            let exact = 0;
+            let partial = 0;
+            let sCopy = [...secret];
+            let gCopy = [...guess];
+
+            // Exact check
+            for(let i=0; i<4; i++) {
+                if(gCopy[i] === sCopy[i]) {
+                    exact++;
+                    sCopy[i] = gCopy[i] = null;
+                }
+            }
+            // Partial check
+            for(let i=0; i<4; i++) {
+                if(gCopy[i] !== null && sCopy.includes(gCopy[i])) {
+                    partial++;
+                    sCopy[sCopy.indexOf(gCopy[i])] = null;
+                }
+            }
+
+            const log = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.innerHTML = `[${guess.join('')}] - <span style="color:var(--success-green)">${exact}C</span> | <span style="color:var(--warning-yellow)">${partial}M</span>`;
+            log.prepend(entry);
+
+            if(exact === 4) {
+                document.getElementById('reward-overlay').classList.remove('hidden');
+            } else {
+                clearAll();
+                document.getElementById('status').textContent = "ACCESS DENIED. TRY AGAIN.";
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

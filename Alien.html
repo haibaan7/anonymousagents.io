@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vaanuva | Warp Dodger</title>
+    <style>
+        :root {
+            --neon-blue: #00ffff;
+            --nitro-red: #ff3366;
+            --space-black: #000000;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: var(--space-black);
+            color: white; font-family: 'Courier New', monospace;
+            overflow: hidden; touch-action: none;
+        }
+
+        canvas { display: block; }
+
+        #ui {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+        }
+
+        .hud { padding: 20px; display: flex; justify-content: space-between; font-size: 1.2rem; }
+
+        /* Boost Meter */
+        #boost-wrap {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: 250px; height: 12px; border: 2px solid var(--neon-blue);
+            background: rgba(0,0,0,0.8); border-radius: 20px; overflow: hidden;
+        }
+        #boost-fill {
+            width: 100%; height: 100%; background: var(--neon-blue);
+            box-shadow: 0 0 15px var(--neon-blue); transition: width 0.1s linear;
+        }
+        .empty { background: var(--nitro-red) !important; box-shadow: 0 0 15px var(--nitro-red) !important; opacity: 0.5; }
+
+        .screen {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9);
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; z-index: 100; text-align: center;
+        }
+
+        .hidden { display: none !important; }
+        .btn {
+            background: var(--neon-blue); color: black; border: none;
+            padding: 1rem 2rem; font-weight: bold; cursor: pointer;
+            margin-top: 20px; font-family: 'Courier New';
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div class="hud">
+            <div>DATA RECOVERED: <span id="score">0</span></div>
+            <div>HI-SCORE: <span id="hi-score">0</span></div>
+        </div>
+        <div id="boost-wrap"><div id="boost-fill"></div></div>
+    </div>
+
+    <div id="start-screen" class="screen">
+        <h1 style="color: var(--neon-blue); letter-spacing: 10px;">WARP DODGER</h1>
+        <p>Hold [SPACE] to engage Warp Drive.</p>
+        <button class="btn" onclick="startGame()">ENGAGE</button>
+    </div>
+
+    <div id="game-over" class="screen hidden">
+        <h1 style="color: var(--nitro-red);">CRITICAL FAILURE</h1>
+        <h2 id="final-score">SCORE: 0</h2>
+        <button class="btn" onclick="location.reload()">REBOOT SYSTEM</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const boostFill = document.getElementById('boost-fill');
+
+        let gameActive = false;
+        let score = 0;
+        let hiScore = localStorage.getItem('vaanuva_hi') || 0;
+        
+        // Game Objects
+        let player = { x: 0, y: 0, w: 40, h: 50, speed: 8, boosting: false };
+        let stars = [];
+        let enemies = [];
+        let boostAmount = 100;
+        let isRecharging = false;
+        let keys = {};
+
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            player.x = canvas.width / 2;
+            player.y = canvas.height - 120;
+            document.getElementById('hi-score').textContent = hiScore;
+
+            // Initialize Stars
+            stars = [];
+            for(let i=0; i<150; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2,
+                    speed: Math.random() * 2 + 1
+                });
+            }
+        }
+
+        window.addEventListener('resize', init);
+        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keyup', e => keys[e.code] = false);
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            gameActive = true;
+            loop();
+        }
+
+        function drawShip() {
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            
+            const color = player.boosting ? "#ff3366" : "#00ffff";
+            ctx.shadowBlur = player.boosting ? 20 : 10;
+            ctx.shadowColor = color;
+
+            // Wings
+            ctx.fillStyle = "#444";
+            ctx.beginPath();
+            ctx.moveTo(-25, 15); ctx.lineTo(0, -10); ctx.lineTo(25, 15);
+            ctx.fill();
+
+            // Main Hull
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.moveTo(0, -25); // Nose
+            ctx.lineTo(-12, 15);
+            ctx.lineTo(12, 15);
+            ctx.closePath();
+            ctx.fill();
+
+            // Cockpit
+            ctx.fillStyle = color;
+            ctx.fillRect(-3, -5, 6, 10);
+
+            // Engine Fire
+            if (player.boosting) {
+                ctx.fillStyle = "#ff3366";
+                ctx.beginPath();
+                ctx.moveTo(-8, 15); ctx.lineTo(0, 40); ctx.lineTo(8, 15);
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        function loop() {
+            if (!gameActive) return;
+
+            // 1. Clear Canvas
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Handle Boost Logic
+            if (keys['Space'] && boostAmount > 0 && !isRecharging) {
+                player.boosting = true;
+                boostAmount -= 1.2; // Drain speed
+                if (boostAmount <= 0) {
+                    isRecharging = true;
+                    boostFill.classList.add('empty');
+                    setTimeout(() => {
+                        isRecharging = false;
+                        boostFill.classList.remove('empty');
+                    }, 10000); // 10s lockout
+                }
+            } else {
+                player.boosting = false;
+                if (boostAmount < 100) {
+                    boostAmount += isRecharging ? (100 / 600) : 0.1;
+                }
+            }
+            boostFill.style.width = boostAmount + "%";
+
+            // 3. Movement & World Speed
+            const worldSpeedMult = player.boosting ? 4 : 1;
+            const playerSpeed = player.boosting ? 15 : 8;
+
+            if (keys['ArrowLeft'] || keys['KeyA']) player.x -= playerSpeed;
+            if (keys['ArrowRight'] || keys['KeyD']) player.x += playerSpeed;
+            player.x = Math.max(20, Math.min(canvas.width - 20, player.x));
+
+            // 4. Update Stars (Parallax)
+            stars.forEach(s => {
+                s.y += s.speed * worldSpeedMult;
+                if (s.y > canvas.height) s.y = 0;
+                ctx.fillStyle = "white";
+                ctx.fillRect(s.x, s.y, s.size, s.size);
+            });
+
+            // 5. Update Enemies
+            if (Math.random() < 0.05 + (score / 2000)) {
+                enemies.push({
+                    x: Math.random() * canvas.width,
+                    y: -50,
+                    size: 20 + Math.random() * 20,
+                    speed: (3 + Math.random() * 4) * worldSpeedMult
+                });
+            }
+
+            enemies.forEach((en, i) => {
+                en.y += en.speed;
+                
+                // Draw Alien Glow
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = "magenta";
+                ctx.fillStyle = "magenta";
+                ctx.fillRect(en.x - en.size/2, en.y, en.size, en.size);
+                ctx.shadowBlur = 0;
+
+                // Collision
+                const dx = player.x - en.x;
+                const dy = player.y - en.y;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                if (distance < 30) {
+                    gameActive = false;
+                    document.getElementById('game-over').classList.remove('hidden');
+                    document.getElementById('final-score').textContent = "SCORE: " + score;
+                    if(score > hiScore) localStorage.setItem('vaanuva_hi', score);
+                }
+
+                if (en.y > canvas.height) {
+                    enemies.splice(i, 1);
+                    score++;
+                    document.getElementById('score').textContent = score;
+                }
+            });
+
+            drawShip();
+            requestAnimationFrame(loop);
+        }
+
+        init();
+    </script>
+</body>
+</html>
